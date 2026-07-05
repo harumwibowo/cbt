@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi CRUD Data Siswa</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; margin-top: 0; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #2980b9; }
+        button.btn-delete { background-color: #e74c3c; }
+        button.btn-delete:hover { background-color: #c0392b; }
+        button.btn-edit { background-color: #f1c40f; color: #333; margin-right: 5px; }
+        button.btn-edit:hover { background-color: #d4ac0d; }
+        button.btn-cancel { background-color: #95a5a6; margin-left: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 25px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; color: #2c3e50; }
+        .loading { display: none; color: #7f8c8d; font-style: italic; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Manajemen Data Siswa</h2>
+    
+    <form id="siswaForm">
+        <input type="hidden" id="studentId">
+        <div class="form-group">
+            <label for="nama">Nama Lengkap</label>
+            <input type="text" id="nama" required placeholder="Contoh: Ahmad Fauzi">
+        </div>
+        <div class="form-group">
+            <label for="kelas">Kelas</label>
+            <input type="text" id="kelas" required placeholder="Contoh: XI-MIPA-1">
+        </div>
+        <div class="form-group">
+            <label for="nisn">NISN</label>
+            <input type="text" id="nisn" required placeholder="Contoh: 0045678912">
+        </div>
+        <button type="submit" id="submitBtn">Simpan Data</button>
+        <button type="button" id="cancelBtn" class="btn-cancel" style="display:none;" onclick="resetForm()">Batal</button>
+    </form>
+
+    <div id="loadingInfo" class="loading">Memproses data... Mohon tunggu...</div>
+
+    <table id="siswaTable">
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Kelas</th>
+                <th>NISN</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="siswaData">
+            </tbody>
+    </table>
+</div>
+
+<script>
+    // ⚠️ GANTI DENGAN URL WEB APP DEPLOYMENT APPS SCRIPT ANDA
+    const API_URL = "https://script.google.com/macros/s/AKfycbwth2HwObINbj4IiW0n6s34Gx2mI5CeeROEkh_4sheLvFPlV7Y6aSUc8Jkza527Wo_dEg/exec";
+
+    const form = document.getElementById('siswaForm');
+    const loadingInfo = document.getElementById('loadingInfo');
+    const tbody = document.getElementById('siswaData');
+
+    // Fungsi Global Fetch Data agar terhindar dari kendala CORS Preflight di Apps Script
+    async function panggilAPI(payload) {
+        loadingInfo.style.display = 'block';
+        try {
+            const respon = await fetch(API_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    // Trik Penting: Menggunakan text/plain mencegah browser mengirim request OPTIONS (Preflight) yang tidak didukung GAS Web App
+                    'Content-Type': 'text/plain;charset=utf-8' 
+                },
+                body: JSON.stringify(payload)
+            });
+            const hasil = await respon.json();
+            if(!hasil.success) throw new Error(hasil.error);
+            return hasil.data;
+        } catch (error) {
+            alert("Terjadi kesalahan: " + error.message);
+            console.error(error);
+        } finally {
+            loadingInfo.style.display = 'none';
+        }
+    }
+
+    // 1. READ: Memuat data dari Database saat halaman dibuka
+    async function muatData() {
+        tbody.innerHTML = '';
+        const daftarSiswa = await panggilAPI({ action: 'read' });
+        
+        if (daftarSiswa && daftarSiswa.length > 0) {
+            daftarSiswa.forEach(siswa => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${siswa.nama}</td>
+                    <td>${siswa.kelas}</td>
+                    <td>${siswa.nisn}</td>
+                    <td>
+                        <button class="btn-edit" onclick="siapkanEdit('${siswa.id}', '${siswa.nama}', '${siswa.kelas}', '${siswa.nisn}')">Edit</button>
+                        <button class="btn-delete" onclick="hapusData('${siswa.id}')">Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada data siswa.</td></tr>';
+        }
+    }
+
+    // 2. CREATE & UPDATE: Aksi Simpan Form
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('studentId').value;
+        const nama = document.getElementById('nama').value;
+        const kelas = document.getElementById('kelas').value;
+        const nisn = document.getElementById('nisn').value;
+
+        const dataSiswa = { nama, kelas, nisn };
+
+        if (id) {
+            // Jika ID ada, jalankan aksi UPDATE
+            await panggilAPI({ action: 'update', id: id, data: dataSiswa });
+        } else {
+            // Jika ID kosong, jalankan aksi CREATE
+            await panggilAPI({ action: 'create', data: dataSiswa });
+        }
+        
+        resetForm();
+        muatData();
+    });
+
+    // 3. Persiapan mengisi form saat tombol Edit ditekan
+    function siapkanEdit(id, nama, kelas, nisn) {
+        document.getElementById('studentId').value = id;
+        document.getElementById('nama').value = nama;
+        document.getElementById('kelas').value = kelas;
+        document.getElementById('nisn').value = nisn;
+        
+        document.getElementById('submitBtn').innerText = "Perbarui Data";
+        document.getElementById('cancelBtn').style.display = 'inline-block';
+    }
+
+    // 4. DELETE: Menghapus data siswa
+    async function hapusData(id) {
+        if (confirm("Apakah Anda yakin ingin menghapus data siswa ini?")) {
+            await panggilAPI({ action: 'delete', id: id });
+            muatData();
+        }
+    }
+
+    function resetForm() {
+        form.reset();
+        document.getElementById('studentId').value = '';
+        document.getElementById('submitBtn').innerText = "Simpan Data";
+        document.getElementById('cancelBtn').style.display = 'none';
+    }
+
+    // Jalankan pemuatan data otomatis saat aplikasi pertama kali diakses
+    muatData();
+</script>
+</body>
+</html>
