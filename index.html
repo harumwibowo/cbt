@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi CRUD Data Siswa</title>
+    <title>Aplikasi CRUD Data Siswa (Direct Firebase)</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 800px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -44,7 +44,7 @@
             <input type="text" id="nisn" required placeholder="Contoh: 0045678912">
         </div>
         <button type="submit" id="submitBtn">Simpan Data</button>
-        <button type="button" id="cancelBtn" class="btn-cancel" style="display:none;" onclick="resetForm()">Batal</button>
+        <button type="button" id="cancelBtn" class="btn-cancel" style="display:none;">Batal</button>
     </form>
 
     <div id="loadingInfo" class="loading">Memproses data... Mohon tunggu...</div>
@@ -63,111 +63,138 @@
     </table>
 </div>
 
-<script>
-    // ⚠️ GANTI DENGAN URL WEB APP DEPLOYMENT APPS SCRIPT ANDA
-    const API_URL = "https://script.google.com/macros/s/AKfycbwth2HwObINbj4IiW0n6s34Gx2mI5CeeROEkh_4sheLvFPlV7Y6aSUc8Jkza527Wo_dEg/exec";
+<script type="module">
+    // Impor fungsi spesifik dari Firebase SDK melalui CDN
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+    // ⚠️ GANTI OBJECT INI DENGAN FIREBASE CONFIG DARI LANGKAH 1
+    const firebaseConfig = {
+      	apiKey: "AIzaSyCLNOTiPXLOuAxtLb5qFVRatiNZwN9glL8",
+  	authDomain: "absenqr-68c0c.firebaseapp.com",
+  	projectId: "absenqr-68c0c",
+  	storageBucket: "absenqr-68c0c.firebasestorage.app",
+  	messagingSenderId: "693176639357",
+  	appId: "1:693176639357:web:0fafa7f218271356613614",
+    };
+
+    // Inisialisasi Firebase dan Firestore
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const koleksiSiswa = collection(db, "Siswa");
+
+    // Deklarasi Elemen DOM
     const form = document.getElementById('siswaForm');
     const loadingInfo = document.getElementById('loadingInfo');
     const tbody = document.getElementById('siswaData');
+    const cancelBtn = document.getElementById('cancelBtn');
 
-    // Fungsi Global Fetch Data agar terhindar dari kendala CORS Preflight di Apps Script
-    async function panggilAPI(payload) {
+    // 1. READ: Memuat data dari Firestore
+    async function muatData() {
         loadingInfo.style.display = 'block';
+        tbody.innerHTML = '';
         try {
-            const respon = await fetch(API_URL, {
-                method: 'POST',
-                mode: 'cors',
-                headers: {
-                    // Trik Penting: Menggunakan text/plain mencegah browser mengirim request OPTIONS (Preflight) yang tidak didukung GAS Web App
-                    'Content-Type': 'text/plain;charset=utf-8' 
-                },
-                body: JSON.stringify(payload)
-            });
-            const hasil = await respon.json();
-            if(!hasil.success) throw new Error(hasil.error);
-            return hasil.data;
+            const snapshot = await getDocs(koleksiSiswa);
+            if (!snapshot.empty) {
+                snapshot.forEach((dokumen) => {
+                    const siswa = dokumen.data();
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${siswa.nama}</td>
+                        <td>${siswa.kelas}</td>
+                        <td>${siswa.nisn}</td>
+                        <td>
+                            <button class="btn-edit" data-id="${dokumen.id}" data-nama="${siswa.nama}" data-kelas="${siswa.kelas}" data-nisn="${siswa.nisn}">Edit</button>
+                            <button class="btn-delete" data-id="${dokumen.id}">Hapus</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada data siswa.</td></tr>';
+            }
         } catch (error) {
-            alert("Terjadi kesalahan: " + error.message);
-            console.error(error);
+            console.error("Gagal memuat data: ", error);
+            alert("Gagal memuat data dari database.");
         } finally {
             loadingInfo.style.display = 'none';
         }
     }
 
-    // 1. READ: Memuat data dari Database saat halaman dibuka
-    async function muatData() {
-        tbody.innerHTML = '';
-        const daftarSiswa = await panggilAPI({ action: 'read' });
-        
-        if (daftarSiswa && daftarSiswa.length > 0) {
-            daftarSiswa.forEach(siswa => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${siswa.nama}</td>
-                    <td>${siswa.kelas}</td>
-                    <td>${siswa.nisn}</td>
-                    <td>
-                        <button class="btn-edit" onclick="siapkanEdit('${siswa.id}', '${siswa.nama}', '${siswa.kelas}', '${siswa.nisn}')">Edit</button>
-                        <button class="btn-delete" onclick="hapusData('${siswa.id}')">Hapus</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        } else {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada data siswa.</td></tr>';
-        }
-    }
-
-    // 2. CREATE & UPDATE: Aksi Simpan Form
+    // 2. CREATE & UPDATE: Menyimpan data ke Firestore
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const id = document.getElementById('studentId').value;
-        const nama = document.getElementById('nama').value;
-        const kelas = document.getElementById('kelas').value;
-        const nisn = document.getElementById('nisn').value;
-
-        const dataSiswa = { nama, kelas, nisn };
-
-        if (id) {
-            // Jika ID ada, jalankan aksi UPDATE
-            await panggilAPI({ action: 'update', id: id, data: dataSiswa });
-        } else {
-            // Jika ID kosong, jalankan aksi CREATE
-            await panggilAPI({ action: 'create', data: dataSiswa });
-        }
+        loadingInfo.style.display = 'block';
         
-        resetForm();
-        muatData();
+        const id = document.getElementById('studentId').value;
+        const dataSiswa = {
+            nama: document.getElementById('nama').value,
+            kelas: document.getElementById('kelas').value,
+            nisn: document.getElementById('nisn').value
+        };
+
+        try {
+            if (id) {
+                // UPDATE
+                const referensiDokumen = doc(db, "Siswa", id);
+                await updateDoc(referensiDokumen, dataSiswa);
+            } else {
+                // CREATE
+                await addDoc(koleksiSiswa, dataSiswa);
+            }
+            resetForm();
+            muatData();
+        } catch (error) {
+            console.error("Gagal menyimpan: ", error);
+            alert("Gagal menyimpan data.");
+        } finally {
+            loadingInfo.style.display = 'none';
+        }
     });
 
-    // 3. Persiapan mengisi form saat tombol Edit ditekan
-    function siapkanEdit(id, nama, kelas, nisn) {
-        document.getElementById('studentId').value = id;
-        document.getElementById('nama').value = nama;
-        document.getElementById('kelas').value = kelas;
-        document.getElementById('nisn').value = nisn;
+    // 3. Persiapan Edit & Hapus (Menggunakan Event Delegation)
+    tbody.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('btn-edit')) {
+            // Logika Edit
+            document.getElementById('studentId').value = e.target.getAttribute('data-id');
+            document.getElementById('nama').value = e.target.getAttribute('data-nama');
+            document.getElementById('kelas').value = e.target.getAttribute('data-kelas');
+            document.getElementById('nisn').value = e.target.getAttribute('data-nisn');
+            
+            document.getElementById('submitBtn').innerText = "Perbarui Data";
+            cancelBtn.style.display = 'inline-block';
+        } 
         
-        document.getElementById('submitBtn').innerText = "Perbarui Data";
-        document.getElementById('cancelBtn').style.display = 'inline-block';
-    }
-
-    // 4. DELETE: Menghapus data siswa
-    async function hapusData(id) {
-        if (confirm("Apakah Anda yakin ingin menghapus data siswa ini?")) {
-            await panggilAPI({ action: 'delete', id: id });
-            muatData();
+        else if (e.target.classList.contains('btn-delete')) {
+            // Logika Hapus
+            if (confirm("Apakah Anda yakin ingin menghapus data siswa ini?")) {
+                loadingInfo.style.display = 'block';
+                const id = e.target.getAttribute('data-id');
+                try {
+                    const referensiDokumen = doc(db, "Siswa", id);
+                    await deleteDoc(referensiDokumen);
+                    muatData();
+                } catch (error) {
+                    console.error("Gagal menghapus: ", error);
+                    alert("Gagal menghapus data.");
+                } finally {
+                    loadingInfo.style.display = 'none';
+                }
+            }
         }
-    }
+    });
+
+    // 4. Logika Tombol Batal
+    cancelBtn.addEventListener('click', resetForm);
 
     function resetForm() {
         form.reset();
         document.getElementById('studentId').value = '';
         document.getElementById('submitBtn').innerText = "Simpan Data";
-        document.getElementById('cancelBtn').style.display = 'none';
+        cancelBtn.style.display = 'none';
     }
 
-    // Jalankan pemuatan data otomatis saat aplikasi pertama kali diakses
+    // Jalankan pemuatan awal
     muatData();
 </script>
 </body>
