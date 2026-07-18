@@ -44,7 +44,10 @@
             }
         }
 
-        window.showDashboard = (user) => {
+        window.togglePassword = () => {
+            const pass = document.getElementById('password');
+            pass.type = pass.type === 'password' ? 'text' : 'password';
+        }
             document.body.innerHTML = `
                 <div class="flex min-h-screen bg-gray-100">
                     <div class="w-64 bg-slate-900 text-white p-6">
@@ -72,9 +75,10 @@
             <button class="flex-1 py-2 border-b-2 border-blue-500 font-bold">Admin</button>
             <button class="flex-1 py-2 text-gray-400">Siswa</button>
         </div>
-        <form onsubmit="handleLogin(event)">
+        <form onsubmit="handleLogin(event)" class="relative">
             <input id="username" type="text" placeholder="Username" class="w-full p-3 mb-4 border rounded-lg" required>
             <input id="password" type="password" placeholder="Password" class="w-full p-3 mb-6 border rounded-lg" required>
+            <span onclick="togglePassword()" class="absolute right-4 top-[148px] cursor-pointer">👁️</span>
             <button class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">Masuk</button>
         </form>
     </div>
