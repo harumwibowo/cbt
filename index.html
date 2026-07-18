@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // TEMPEL KONFIGURASI FIREBASE DI SINI
         const firebaseConfig = {
@@ -34,19 +34,17 @@
             const password = document.getElementById('password').value.trim();
             
             try {
-                // Mengambil data langsung dari dokumen Admin
+                // Mengambil SEMUA dokumen dalam subkoleksi Data
                 const collRef = collection(db, "Pengguna/Admin/Data");
-                const q = query(collRef, where("username", "==", username));
-                const querySnapshot = await getDocs(q);
+                const querySnapshot = await getDocs(collRef);
                 
                 let found = false;
                 querySnapshot.forEach((doc) => {
-                    // Pastikan field di firestore sesuai dengan case-sensitive
-                    // Cek nama field di firestore Anda, apakah "username" atau "Username"
-                    if (doc.data().password === password) {
-                        const userData = doc.data();
-                        sessionStorage.setItem('user', JSON.stringify(userData));
-                        showDashboard(userData);
+                    const data = doc.data();
+                    console.log("Checking:", data); // Debugging: lihat data yang diterima
+                    if (data.username === username && data.password === password) {
+                        sessionStorage.setItem('user', JSON.stringify(data));
+                        showDashboard(data);
                         found = true;
                     }
                 });
