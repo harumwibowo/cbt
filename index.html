@@ -41,8 +41,9 @@
                 let found = false;
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    console.log("Checking:", data); // Debugging: lihat data yang diterima
-                    if (data.username === username && data.password === password) {
+                    console.log("Data Firestore:", data);
+                    console.log("Input:", username, password);
+                    if (String(data.username).trim() === username && String(data.password).trim() === password) {
                         sessionStorage.setItem('user', JSON.stringify(data));
                         showDashboard(data);
                         found = true;
