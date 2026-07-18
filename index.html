@@ -34,12 +34,15 @@
             const password = document.getElementById('password').value.trim();
             
             try {
+                // Mengambil data langsung dari dokumen Admin
                 const collRef = collection(db, "Pengguna/Admin/Data");
                 const q = query(collRef, where("username", "==", username));
                 const querySnapshot = await getDocs(q);
                 
                 let found = false;
                 querySnapshot.forEach((doc) => {
+                    // Pastikan field di firestore sesuai dengan case-sensitive
+                    // Cek nama field di firestore Anda, apakah "username" atau "Username"
                     if (doc.data().password === password) {
                         const userData = doc.data();
                         sessionStorage.setItem('user', JSON.stringify(userData));
