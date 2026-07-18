@@ -3,12 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - CBT</title>
+    <title>Panel Admin CBT</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDK & Config -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Animasi untuk notifikasi Toast */
+        .toast-enter { animation: slideIn 0.3s ease-out forwards; }
+        .toast-leave { animation: fadeOut 0.3s ease-in forwards; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar -->
+        <aside class="w-64 bg-slate-900 text-white flex flex-col transition-all duration-300 z-20 hidden md:flex">
+            <div class="h-16 flex items-center px-6 border-b border-slate-700">
+                <i class="fas fa-laptop-code text-blue-400 text-2xl mr-3"></i>
+                <span class="text-xl font-bold tracking-wider">CBT ADMIN</span>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4">
+                <ul class="space-y-1">
+                    <li class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 mt-4">Menu Utama</li>
+                    <li>
+                        <a href="#" class="flex items-center px-6 py-3 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                            <i class="fas fa-tachometer-alt w-5 mr-3"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 mt-4">Data Master</li>
+                    <li>
+                        <a href="#" class="flex items-center px-6 py-3 bg-blue-600 text-white transition-colors border-l-4 border-blue-400">
+                            <i class="fas fa-users w-5 mr-3"></i> Pengguna
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center px-6 py-3 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                            <i class="fas fa-book w-5 mr-3"></i> Mata Pelajaran
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center px-6 py-3 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                            <i class="fas fa-file-alt w-5 mr-3"></i> Bank Soal
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="p-4 border-t border-slate-700">
+                <button class="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors">
+                    <i class="fas fa-sign-out-alt w-5 mr-2"></i> Keluar
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+            <!-- Header -->
+            <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6 z-10">
+                <div class="flex items-center">
+                    <button class="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none mr-4">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-800">Manajemen Pengguna</h1>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
+                        A
+                    </div>
+                    <span class="ml-2 text-sm font-medium text-gray-700 hidden sm:block">Admin CBT</span>
+                </div>
+            </header>
+
+            <!-- Content Scrollable Area -->
+            <div class="flex-1 overflow-auto p-6">
+                
+                <!-- Card Form Tambah/Edit Pengguna -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b" id="formTitle">Tambah Pengguna Baru</h2>
+                    
+                    <form id="userForm" class="space-y-4">
+                        <input type="hidden" id="userId">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Field Username -->
+                            <div>
+                                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                                <input type="text" id="username" required placeholder="Masukkan username" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
+                            </div>
+                            <!-- Field Password -->
+                            <div>
+                                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                                <input type="text" id="password" required placeholder="Masukkan password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
+                            </div>
+                            <!-- Field Nama Lengkap -->
+                            <div>
+                                <label for="fullName" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                                <input type="text" id="fullName" required placeholder="Masukkan nama lengkap" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
+                            </div>
+                            <!-- Field Peran -->
+                            <div>
+                                <label for="role" class="block text-sm font-medium text-gray-700 mb-1">Peran</label>
+                                <select id="role" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors bg-white">
+                                    <option value="" disabled selected>Pilih Peran</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Guru">Guru</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end pt-4 space-x-3">
+                            <button type="button" id="btnCancel" class="hidden px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none transition-colors">Batal</button>
+                            <button type="submit" id="btnSubmit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center">
+                                <i class="fas fa-save mr-2"></i> <span id="btnSubmitText">Simpan Data</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Card Tabel Pengguna -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <h2 class="text-lg font-semibold text-gray-800">Daftar Pengguna</h2>
+                        <div class="text-sm text-gray-500">
+                            Total: <span id="totalUsers" class="font-bold text-gray-800">0</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-600 text-sm border-b border-gray-200">
+                                    <th class="py-3 px-6 font-medium">No</th>
+                                    <th class="py-3 px-6 font-medium">Username</th>
+                                    <th class="py-3 px-6 font-medium">Nama Lengkap</th>
+                                    <th class="py-3 px-6 font-medium">Peran</th>
+                                    <th class="py-3 px-6 font-medium text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody" class="text-sm text-gray-700 divide-y divide-gray-100">
+                                <!-- Data akan dimuat melalui JavaScript -->
+                                <tr>
+                                    <td colspan="5" class="py-8 text-center text-gray-400">
+                                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                        <p>Memuat data...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2"></div>
+
     <script type="module">
-        // Tempelkan konfigurasi Firebase Anda di sini
-        const firebaseConfig = {
+        // Import Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // =====================================================================
+        // TEMPAT CONFIG FIREBASE ANDA
+        // Silakan ganti nilai di bawah ini dengan config dari Firebase Console Anda
+        // =====================================================================
+        const userFirebaseConfig = {
             apiKey: "AIzaSyCLNOTiPXLOuAxtLb5qFVRatiNZwN9glL8",
   authDomain: "absenqr-68c0c.firebaseapp.com",
   projectId: "absenqr-68c0c",
@@ -16,115 +184,226 @@
   messagingSenderId: "693176639357",
   appId: "1:693176639357:web:0fafa7f218271356613614",
         };
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        // =====================================================================
 
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+        // Mendeteksi environment (Canvas environment vs environment pengguna asli)
+        // Jika kode dijalankan di Canvas, gunakan config Canvas. Jika di Github Pages, gunakan userFirebaseConfig
+        const isCanvasEnv = typeof __firebase_config !== 'undefined';
+        const finalConfig = isCanvasEnv ? JSON.parse(__firebase_config) : userFirebaseConfig;
+        
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'cbt-app-default';
 
-        const app = initializeApp(firebaseConfig);
+        // Initialize Firebase
+        const app = initializeApp(finalConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        async function loadUsers() {
-            const querySnapshot = await getDocs(collection(db, "users"));
-            const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = '';
-            querySnapshot.forEach((doc) => {
-                const user = doc.data();
-                tbody.innerHTML += `<tr class="border-b">
-                    <td class="py-2">${user.username}</td>
-                    <td class="py-2">${user.fullname}</td>
-                    <td class="py-2">${user.role}</td>
-                </tr>`;
-            });
+        // Path Collection: 
+        // Menggunakan path yang aman untuk rules Canvas (jika di test di sini)
+        // Jika Anda deploy sendiri dan mengubah rules Firebase, Anda bisa mengganti ini menjadi collection(db, 'users')
+        const usersCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'users');
+
+        // Referensi DOM
+        const userForm = document.getElementById('userForm');
+        const userIdInput = document.getElementById('userId');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const fullNameInput = document.getElementById('fullName');
+        const roleInput = document.getElementById('role');
+        const userTableBody = document.getElementById('userTableBody');
+        const formTitle = document.getElementById('formTitle');
+        const btnSubmitText = document.getElementById('btnSubmitText');
+        const btnCancel = document.getElementById('btnCancel');
+        const totalUsers = document.getElementById('totalUsers');
+        const toastContainer = document.getElementById('toastContainer');
+
+        let isInitialized = false;
+
+        // Fungsi Menampilkan Notifikasi Pop-up (Toast)
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : (type === 'error' ? 'bg-red-500' : 'bg-blue-500');
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
+            
+            toast.className = `${bgColor} text-white px-6 py-3 rounded shadow-lg flex items-center toast-enter`;
+            toast.innerHTML = `<i class="fas ${icon} mr-3"></i> ${message}`;
+            
+            toastContainer.appendChild(toast);
+
+            // Hapus otomatis setelah 3 detik
+            setTimeout(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-leave');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300); // Waktu animasi
+            }, 3000);
         }
 
-        loadUsers();
-
-        document.getElementById('userForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // Fungsi Memuat Data Pengguna (Read)
+        async function fetchUsers() {
+            if (!isInitialized) return;
+            
             try {
-                await addDoc(collection(db, "users"), {
-                    username: document.getElementById('username').value,
-                    password: document.getElementById('password').value,
-                    fullname: document.getElementById('fullname').value,
-                    role: document.getElementById('role').value
+                const querySnapshot = await getDocs(usersCollectionRef);
+                userTableBody.innerHTML = '';
+                
+                let count = 0;
+                
+                if (querySnapshot.empty) {
+                    userTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="py-6 text-center text-gray-500">Belum ada data pengguna.</td>
+                        </tr>
+                    `;
+                    totalUsers.textContent = count;
+                    return;
+                }
+
+                // Temporary array untuk menyimpan data agar bisa disortir (opsional)
+                const users = [];
+                querySnapshot.forEach((doc) => {
+                    users.push({ id: doc.id, ...doc.data() });
                 });
-                showToast('Data berhasil disimpan!');
-                setTimeout(() => location.reload(), 1000);
+
+                users.forEach((userData, index) => {
+                    count++;
+                    const roleBadgeColor = userData.role === 'Admin' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700';
+                    
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-gray-50 transition-colors";
+                    tr.innerHTML = `
+                        <td class="py-3 px-6">${index + 1}</td>
+                        <td class="py-3 px-6 font-medium text-gray-800">${userData.username}</td>
+                        <td class="py-3 px-6">${userData.fullName}</td>
+                        <td class="py-3 px-6">
+                            <span class="px-2 py-1 text-xs rounded-full font-medium ${roleBadgeColor}">
+                                ${userData.role}
+                            </span>
+                        </td>
+                        <td class="py-3 px-6 text-center">
+                            <button onclick="editUser('${userData.id}', '${userData.username}', '${userData.password}', '${userData.fullName}', '${userData.role}')" class="text-blue-500 hover:text-blue-700 mx-1 p-1" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteUser('${userData.id}')" class="text-red-500 hover:text-red-700 mx-1 p-1" title="Hapus">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    `;
+                    userTableBody.appendChild(tr);
+                });
+                totalUsers.textContent = count;
+
             } catch (error) {
-                showToast('Gagal menyimpan data.');
+                console.error("Gagal memuat data:", error);
+                showToast("Gagal memuat data dari database", "error");
+                userTableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-red-500">Error memuat data</td></tr>`;
+            }
+        }
+
+        // Fungsi Menangani Submit Form (Create & Update)
+        userForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!isInitialized) return showToast("Sistem belum siap, tunggu sebentar.", "error");
+
+            const btnSubmit = document.getElementById('btnSubmit');
+            const originalBtnHtml = btnSubmit.innerHTML;
+            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...';
+            btnSubmit.disabled = true;
+
+            const userData = {
+                username: usernameInput.value,
+                password: passwordInput.value,
+                fullName: fullNameInput.value,
+                role: roleInput.value,
+                updatedAt: new Date().toISOString()
+            };
+
+            const editId = userIdInput.value;
+
+            try {
+                if (editId) {
+                    // Update Data
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', editId);
+                    await updateDoc(docRef, userData);
+                    showToast("Data pengguna berhasil diperbarui!");
+                } else {
+                    // Simpan Data Baru
+                    userData.createdAt = new Date().toISOString();
+                    await addDoc(usersCollectionRef, userData);
+                    showToast("Pengguna baru berhasil ditambahkan!");
+                }
+                
+                resetForm();
+                // "Reload Otomatis" data tabel tanpa refresh halaman
+                fetchUsers(); 
+            } catch (error) {
+                console.error("Error menyimpan dokumen: ", error);
+                showToast("Gagal menyimpan data pengguna", "error");
+            } finally {
+                btnSubmit.innerHTML = originalBtnHtml;
+                btnSubmit.disabled = false;
             }
         });
 
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 3000);
+        // Fungsi Edit - Memasukkan data ke form
+        window.editUser = (id, username, password, fullName, role) => {
+            userIdInput.value = id;
+            usernameInput.value = username;
+            passwordInput.value = password; // Hati-hati, dalam prod password sebaiknya tidak ditampilkan plain text
+            fullNameInput.value = fullName;
+            roleInput.value = role;
+
+            formTitle.textContent = "Edit Pengguna";
+            btnSubmitText.textContent = "Update Data";
+            btnCancel.classList.remove('hidden');
+            
+            // Scroll ke form
+            document.querySelector('.overflow-auto').scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // Fungsi Hapus
+        window.deleteUser = async (id) => {
+            // Kita dilarang menggunakan window.confirm, jadi kita implementasi custom confirm sederhana atau hapus langsung.
+            // Untuk kenyamanan, kita akan hapus langsung namun idealnya menggunakan modal dialog kustom.
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', id);
+                await deleteDoc(docRef);
+                showToast("Pengguna berhasil dihapus!");
+                fetchUsers();
+            } catch (error) {
+                console.error("Gagal menghapus data:", error);
+                showToast("Gagal menghapus pengguna", "error");
+            }
+        };
+
+        // Fungsi Reset Form
+        function resetForm() {
+            userForm.reset();
+            userIdInput.value = '';
+            formTitle.textContent = "Tambah Pengguna Baru";
+            btnSubmitText.textContent = "Simpan Data";
+            btnCancel.classList.add('hidden');
         }
-</head>
-<body class="bg-gray-100 font-sans">
-    <div class="flex h-screen">
-        <aside class="w-64 bg-slate-800 text-white p-6">
-            <h2 class="text-2xl font-bold mb-10">CBT Admin</h2>
-            <nav>
-                <div class="mb-4">
-                    <p class="text-gray-400 uppercase text-xs font-semibold mb-2">Data Master</p>
-                    <a href="#" class="block py-2 px-4 bg-blue-600 rounded">Pengguna</a>
-                </div>
-            </nav>
-        </aside>
-        <main class="flex-1 p-8">
-            <h1 class="text-3xl font-semibold mb-6">Tambah Pengguna</h1>
-            <div class="bg-white p-6 rounded-lg shadow-md max-w-lg mb-8">
-                <form id="userForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium">Username</label>
-                        <input type="text" id="username" class="w-full border rounded p-2" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium">Password</label>
-                        <input type="password" id="password" class="w-full border rounded p-2" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium">Nama Lengkap</label>
-                        <input type="text" id="fullname" class="w-full border rounded p-2" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium">Peran</label>
-                        <select id="role" class="w-full border rounded p-2">
-                            <option value="Admin">Admin</option>
-                            <option value="Guru">Guru</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Simpan</button>
-                </form>
-            </div>
 
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-xl font-semibold mb-4">Daftar Pengguna</h2>
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="border-b">
-                            <th class="py-2">Username</th>
-                            <th class="py-2">Nama</th>
-                            <th class="py-2">Peran</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTableBody"></tbody>
-                </table>
-            </div>
+        btnCancel.addEventListener('click', resetForm);
 
-            <!-- Toast Status -->
-            <div id="toast" class="hidden fixed bottom-5 right-5 bg-green-500 text-white px-6 py-3 rounded shadow-lg"></div>
-        </main>
-    </div>
+        // Autentikasi dan Inisialisasi Awal
+        async function initApp() {
+            try {
+                // Diperlukan auth agar bisa mengakses Firestore (meski sekadar login anonim)
+                await signInAnonymously(auth);
+                isInitialized = true;
+                fetchUsers();
+            } catch (error) {
+                console.error("Autentikasi gagal:", error);
+                userTableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-red-500">Gagal terhubung ke database. Periksa konfigurasi.</td></tr>`;
+            }
+        }
+
+        // Jalankan saat halaman dimuat
+        window.onload = initApp;
+
+    </script>
 </body>
 </html>
