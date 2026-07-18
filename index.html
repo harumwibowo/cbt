@@ -57,7 +57,26 @@
                 Swal.fire({ icon: 'error', title: 'Error', text: e.message });
             }
         }
+
+        window.showDashboard = (user) => {
             document.body.innerHTML = `
+                <div class="flex min-h-screen bg-gray-100">
+                    <div class="w-64 bg-slate-900 text-white p-6">
+                        <h1 class="text-xl font-bold mb-10">CBT Admin</h1>
+                        <nav>
+                            <a href="#" class="block py-2.5 px-4 bg-blue-600 rounded">Dasbor</a>
+                        </nav>
+                    </div>
+                    <div class="flex-1 p-10">
+                        <div class="bg-white p-6 rounded-xl shadow">
+                            <h2 class="text-2xl font-bold mb-4">Dasbor Admin</h2>
+                            <p><strong>Nama:</strong> ${user.Nama_Lengkap}</p>
+                            <p><strong>Peran:</strong> ${user.Peran}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
                 <div class="flex min-h-screen bg-gray-100">
                     <div class="w-64 bg-slate-900 text-white p-6">
                         <h1 class="text-xl font-bold mb-10">CBT Admin</h1>
