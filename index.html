@@ -31,21 +31,29 @@
 
         window.handleLogin = async (event) => {
             event.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
             
             try {
-                const q = query(collection(db, "Pengguna/Admin/Data"), where("username", "==", username), where("password", "==", password));
+                const collRef = collection(db, "Pengguna/Admin/Data");
+                const q = query(collRef, where("username", "==", username));
                 const querySnapshot = await getDocs(q);
                 
-                if (!querySnapshot.empty) {
-                    const userData = querySnapshot.docs[0].data();
-                    sessionStorage.setItem('user', JSON.stringify(userData));
-                    showDashboard(userData);
-                } else {
-                    Swal.fire({ icon: 'error', title: 'Gagal', text: 'Username/Password salah' });
+                let found = false;
+                querySnapshot.forEach((doc) => {
+                    if (doc.data().password === password) {
+                        const userData = doc.data();
+                        sessionStorage.setItem('user', JSON.stringify(userData));
+                        showDashboard(userData);
+                        found = true;
+                    }
+                });
+
+                if (!found) {
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: 'Username atau Password salah' });
                 }
             } catch (e) {
+                console.error("Error:", e);
                 Swal.fire({ icon: 'error', title: 'Error', text: e.message });
             }
         }
