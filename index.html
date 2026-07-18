@@ -24,6 +24,11 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        window.togglePassword = () => {
+            const pass = document.getElementById('password');
+            pass.type = pass.type === 'password' ? 'text' : 'password';
+        }
+
         window.handleLogin = async (event) => {
             event.preventDefault();
             const username = document.getElementById('username').value;
@@ -43,11 +48,6 @@
             } catch (e) {
                 Swal.fire({ icon: 'error', title: 'Error', text: e.message });
             }
-        }
-
-        window.togglePassword = () => {
-            const pass = document.getElementById('password');
-            pass.type = pass.type === 'password' ? 'text' : 'password';
         }
             document.body.innerHTML = `
                 <div class="flex min-h-screen bg-gray-100">
@@ -76,10 +76,12 @@
             <button class="flex-1 py-2 border-b-2 border-blue-500 font-bold">Admin</button>
             <button class="flex-1 py-2 text-gray-400">Siswa</button>
         </div>
-        <form onsubmit="handleLogin(event)" class="relative">
+        <form onsubmit="handleLogin(event)">
             <input id="username" type="text" placeholder="Username" class="w-full p-3 mb-4 border rounded-lg" required>
-            <input id="password" type="password" placeholder="Password" class="w-full p-3 mb-6 border rounded-lg" required>
-            <span onclick="togglePassword()" class="absolute right-4 top-[148px] cursor-pointer">👁️</span>
+            <div class="relative mb-6">
+                <input id="password" type="password" placeholder="Password" class="w-full p-3 border rounded-lg" required>
+                <span onclick="togglePassword()" class="absolute right-3 top-3.5 cursor-pointer">👁️</span>
+            </div>
             <button class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">Masuk</button>
         </form>
     </div>
